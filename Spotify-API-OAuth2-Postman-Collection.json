@@ -1,0 +1,425 @@
+{
+	"info": {
+		"_postman_id": "9f99bd51-afe9-4094-9970-5c14464ef8c9",
+		"name": "Spotify App Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17516190",
+		"_collection_link": "https://mobile-app-team-6125.postman.co/workspace/7f23a2be-0231-4b1f-842a-b50c887fb1b8/collection/17516190-9f99bd51-afe9-4094-9970-5c14464ef8c9?action=share&source=collection_link&creator=17516190"
+	},
+	"item": [
+		{
+			"name": "Get Access Grant",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://accounts.spotify.com/authorize?response_type=code&client_id={{ spotify_client_id }}&scope=playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public&redirect_uri={{ spotify_redirect_uri }}&state=YOUR_RANDOM_STATE",
+					"protocol": "https",
+					"host": [
+						"accounts",
+						"spotify",
+						"com"
+					],
+					"path": [
+						"authorize"
+					],
+					"query": [
+						{
+							"key": "response_type",
+							"value": "code"
+						},
+						{
+							"key": "client_id",
+							"value": "{{ spotify_client_id }}"
+						},
+						{
+							"key": "scope",
+							"value": "playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public"
+						},
+						{
+							"key": "redirect_uri",
+							"value": "{{ spotify_redirect_uri }}"
+						},
+						{
+							"key": "state",
+							"value": "YOUR_RANDOM_STATE"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Access Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "client_id",
+							"value": "{{ spotify_client_id }}",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "{{ spotify_client_secret }}",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "authorization_code",
+							"type": "text"
+						},
+						{
+							"key": "code",
+							"value": "{{ spotify_authorization_code }}",
+							"type": "text"
+						},
+						{
+							"key": "redirect_uri",
+							"value": "{{ spotify_redirect_uri }}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://accounts.spotify.com/api/token",
+					"protocol": "https",
+					"host": [
+						"accounts",
+						"spotify",
+						"com"
+					],
+					"path": [
+						"api",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Playlist",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test that status code is 201 (Created)",
+							"pm.test(\"Status code is 201 (Created)\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"// Parse response JSON",
+							"var jsonData = pm.response.json();",
+							"",
+							"// Test that playlist name matches request",
+							"pm.test(\"Playlist name matches request\", function () {",
+							"    pm.expect(jsonData.name).to.eql(\"Khaled Mahmoud Test Playlist\");",
+							"});",
+							"",
+							"// Test that playlist description matches request",
+							"pm.test(\"Playlist description matches request\", function () {",
+							"    pm.expect(jsonData.description).to.eql(\"Khaled Mahmoud Testing Playlist\");",
+							"});",
+							"",
+							"// Test that playlist public status matches request",
+							"pm.test(\"Playlist public status matches request\", function () {",
+							"    pm.expect(jsonData.public).to.eql(false);",
+							"});",
+							"",
+							"// Test that response JSON has expected structure",
+							"pm.test(\"Response has expected keys\", function () {",
+							"    pm.expect(jsonData).to.have.property(\"id\");",
+							"    pm.expect(jsonData).to.have.property(\"name\");",
+							"    pm.expect(jsonData).to.have.property(\"description\");",
+							"    pm.expect(jsonData).to.have.property(\"public\");",
+							"    pm.expect(jsonData).to.have.property(\"tracks\");",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ spotify_access_token }}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Khaled Mahmoud Test Playlist\",\r\n    \"public\": false,\r\n    \"description\": \"Khaled Mahmoud Testing Playlist\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.spotify.com/v1/users/{{ spotify_user_id }}/playlists",
+					"protocol": "https",
+					"host": [
+						"api",
+						"spotify",
+						"com"
+					],
+					"path": [
+						"v1",
+						"users",
+						"{{ spotify_user_id }}",
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"let jsonData = pm.response.json();",
+							"",
+							"pm.test(\"Response has property 'display_name' (string)\", function () {",
+							"    pm.expect(jsonData).to.have.property('display_name');",
+							"    pm.expect(jsonData.display_name).to.be.a('string');",
+							"});",
+							"",
+							"pm.test(\"Response has property 'external_urls' (object with 'spotify' URL string)\", function () {",
+							"    pm.expect(jsonData).to.have.property('external_urls');",
+							"    pm.expect(jsonData.external_urls).to.be.an('object');",
+							"    pm.expect(jsonData.external_urls).to.have.property('spotify');",
+							"    pm.expect(jsonData.external_urls.spotify).to.be.a('string');",
+							"});",
+							"",
+							"pm.test(\"Response has property 'followers' (object with 'total' number)\", function () {",
+							"    pm.expect(jsonData).to.have.property('followers');",
+							"    pm.expect(jsonData.followers).to.be.an('object');",
+							"    pm.expect(jsonData.followers).to.have.property('total');",
+							"    pm.expect(jsonData.followers.total).to.be.a('number');",
+							"});",
+							"",
+							"pm.test(\"Response has property 'href' (string)\", function () {",
+							"    pm.expect(jsonData).to.have.property('href');",
+							"    pm.expect(jsonData.href).to.be.a('string');",
+							"});",
+							"",
+							"pm.test(\"Response has property 'id' (string)\", function () {",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.expect(jsonData.id).to.be.a('string');",
+							"});",
+							"",
+							"pm.test(\"Response has property 'images' (array)\", function () {",
+							"    pm.expect(jsonData).to.have.property('images');",
+							"    pm.expect(jsonData.images).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Response has property 'type' (string)\", function () {",
+							"    pm.expect(jsonData).to.have.property('type');",
+							"    pm.expect(jsonData.type).to.be.a('string');",
+							"});",
+							"",
+							"pm.test(\"Response has property 'uri' (string)\", function () {",
+							"    pm.expect(jsonData).to.have.property('uri');",
+							"    pm.expect(jsonData.uri).to.be.a('string');",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ spotify_access_token }}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.spotify.com/v1/me",
+					"protocol": "https",
+					"host": [
+						"api",
+						"spotify",
+						"com"
+					],
+					"path": [
+						"v1",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Playlists",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"pm.test(\"Response body has 'total' property of type number\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('total');",
+							"    pm.expect(jsonData.total).to.be.a('number');",
+							"});",
+							"",
+							"pm.test(\"Response body has 'items' property as array\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('items');",
+							"    pm.expect(jsonData.items).to.be.an('array');",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ spotify_access_token }}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.spotify.com/v1/me/playlists",
+					"protocol": "https",
+					"host": [
+						"api",
+						"spotify",
+						"com"
+					],
+					"path": [
+						"v1",
+						"me",
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Playlist",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ spotify_access_token }}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Khaled Mahmoud Test Playlist2\",\r\n    \"public\": false,\r\n    \"description\": \"Khaled Mahmoud Testing Playlist2\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.spotify.com/v1/playlists/{{ spotify_playlist_id }}",
+					"protocol": "https",
+					"host": [
+						"api",
+						"spotify",
+						"com"
+					],
+					"path": [
+						"v1",
+						"playlists",
+						"{{ spotify_playlist_id }}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
